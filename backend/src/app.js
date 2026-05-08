@@ -22,9 +22,25 @@ const app = express();
 
 // Security middleware
 app.use(helmet());
+
+const allowedOrigins = [
+  // Local development
+  'http://localhost:3000',
+  'http://localhost:5173',
+  // Production — comma-separated list from env, e.g. "https://ethara-nine-gold.vercel.app"
+  ...( process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim()) : [] ),
+];
+
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    origin: (incomingOrigin, callback) => {
+      // Allow server-to-server requests (no Origin header) and listed origins
+      if (!incomingOrigin || allowedOrigins.includes(incomingOrigin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS: origin '${incomingOrigin}' not allowed`));
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
