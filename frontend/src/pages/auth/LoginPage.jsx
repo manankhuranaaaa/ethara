@@ -73,10 +73,10 @@ export default function LoginPage() {
           <Link to="/register" className="text-blue-600 font-medium hover:underline">Sign up</Link>
         </p>
 
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg text-xs text-gray-500">
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg text-xs text-gray-900">
           <p className="font-medium mb-1">Demo credentials:</p>
-          <p>Admin: admin@taskmanager.com</p>
-          <p>Password: Password123!</p>
+          <p>Email: manankhurana1409@gmail.com</p>
+          <p>Password: Manan@1409</p>
         </div>
       </div>
     </div>
