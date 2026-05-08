@@ -4,6 +4,10 @@ const BASE_URL = import.meta.env.VITE_API_URL;
 if (!BASE_URL) {
   throw new Error('VITE_API_URL is not set. Add it to frontend/.env and to Vercel environment variables.');
 }
+if (!BASE_URL.endsWith('/api')) {
+  throw new Error(`VITE_API_URL must end with /api. Got: "${BASE_URL}"`);
+}
+console.log('[api] baseURL:', BASE_URL);
 
 const api = axios.create({
   baseURL: BASE_URL,
