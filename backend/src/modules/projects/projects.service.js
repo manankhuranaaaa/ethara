@@ -96,13 +96,20 @@ const getMembers = async (projectId) => {
   });
 };
 
-const addMember = async (projectId, { userId: targetUserId, role = 'member' }, actorId) => {
-  const user = await User.findOne({ where: { id: targetUserId, is_active: true } });
+const addMember = async (projectId, { userId: targetUserId, email, role = 'member' }, actorId) => {
+  // Support lookup by email if userId not provided
+  let user;
+  if (targetUserId) {
+    user = await User.findOne({ where: { id: targetUserId, is_active: true } });
+  } else if (email) {
+    user = await User.findOne({ where: { email, is_active: true } });
+  }
   if (!user) {
     const error = new Error('User not found');
     error.statusCode = 404;
     throw error;
   }
+  targetUserId = user.id;
 
   const existing = await ProjectMember.findOne({ where: { project_id: projectId, user_id: targetUserId } });
   if (existing) {

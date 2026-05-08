@@ -6,6 +6,8 @@ const getStats = async (userId, userRole) => {
   sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const todayEnd = new Date(today);
+  todayEnd.setHours(23, 59, 59, 999);
 
   let projectWhere = {};
   let taskWhere = {};
@@ -17,8 +19,16 @@ const getStats = async (userId, userRole) => {
     taskWhere.project_id = { [Op.in]: projectIds };
   }
 
-  const [totalProjects, taskStatusCounts, overdueCount, myAssignedTasks, recentActivity, upcomingDueDates] =
-    await Promise.all([
+  const [
+    totalProjects,
+    taskStatusCounts,
+    overdueCount,
+    myAssignedTasks,
+    recentActivity,
+    upcomingDueDates,
+    tasksDueToday,
+    recentProjects,
+  ] = await Promise.all([
       Project.count({ where: projectWhere }),
 
       Task.findAll({
@@ -49,6 +59,24 @@ const getStats = async (userId, userRole) => {
         order: [['due_date', 'ASC']],
         limit: 10,
       }),
+
+      Task.findAll({
+        where: {
+          ...taskWhere,
+          due_date: { [Op.between]: [today, todayEnd] },
+          status: { [Op.ne]: 'done' },
+        },
+        include: [{ model: User, as: 'assignee', attributes: ['id', 'name', 'avatar_url'] }],
+        order: [['priority', 'DESC']],
+        limit: 5,
+      }),
+
+      Project.findAll({
+        where: { ...projectWhere, status: 'active' },
+        include: [{ model: User, as: 'owner', attributes: ['id', 'name', 'avatar_url'] }],
+        order: [['updated_at', 'DESC']],
+        limit: 4,
+      }),
     ]);
 
   const tasksByStatus = { todo: 0, in_progress: 0, in_review: 0, done: 0 };
@@ -58,14 +86,27 @@ const getStats = async (userId, userRole) => {
     totalTasks += parseInt(t.count);
   });
 
+  // Build priority breakdown from tasks in scope
+  const taskPriorityCounts = await Task.findAll({
+    where: taskWhere,
+    attributes: ['priority', [fn('COUNT', col('id')), 'count']],
+    group: ['priority'],
+    raw: true,
+  });
+  const tasksByPriority = { low: 0, medium: 0, high: 0, critical: 0 };
+  taskPriorityCounts.forEach((t) => { tasksByPriority[t.priority] = parseInt(t.count); });
+
   return {
     totalProjects,
     totalTasks,
     tasksByStatus,
+    tasksByPriority,
     overdueCount,
     myAssignedTasks,
     recentActivity,
     upcomingDueDates,
+    tasksDueToday,
+    recentProjects,
   };
 };
 

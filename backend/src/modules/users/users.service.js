@@ -2,6 +2,16 @@ const { User } = require('../../models');
 const { getPagination, getPaginationMeta } = require('../../utils/pagination');
 const { logActivity } = require('../../utils/activityLogger');
 
+const searchByEmail = async (email) => {
+  if (!email || email.length < 2) return [];
+  const { Op } = require('sequelize');
+  return User.findAll({
+    where: { email: { [Op.iLike]: `%${email}%` }, is_active: true },
+    attributes: ['id', 'name', 'email', 'avatar_url', 'role'],
+    limit: 10,
+  });
+};
+
 const listUsers = async (query) => {
   const { page, limit, offset } = getPagination(query);
   const { count, rows } = await User.findAndCountAll({
@@ -56,4 +66,4 @@ const deactivateUser = async (targetId, actorId) => {
   });
 };
 
-module.exports = { listUsers, getUserById, updateUserRole, deactivateUser };
+module.exports = { listUsers, getUserById, updateUserRole, deactivateUser, searchByEmail };

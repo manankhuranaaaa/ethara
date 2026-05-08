@@ -3,12 +3,30 @@ const { body, param } = require('express-validator');
 const tasksController = require('./tasks.controller');
 const { authenticate } = require('../../middleware/authenticate');
 const validate = require('../../middleware/validate');
+const asyncHandler = require('../../utils/asyncHandler');
+const { ActivityLog, User } = require('../../models');
+const { sendSuccess } = require('../../utils/response');
 
 const router = express.Router();
 
 router.use(authenticate);
 
 router.get('/:id', [param('id').isUUID()], validate, tasksController.getTaskById);
+
+router.get(
+  '/:id/activity',
+  [param('id').isUUID()],
+  validate,
+  asyncHandler(async (req, res) => {
+    const logs = await ActivityLog.findAll({
+      where: { entity_type: 'task', entity_id: req.params.id },
+      include: [{ model: User, as: 'user', attributes: ['id', 'name', 'avatar_url'] }],
+      order: [['created_at', 'DESC']],
+      limit: 20,
+    });
+    return sendSuccess(res, logs);
+  })
+);
 
 router.patch(
   '/:id',

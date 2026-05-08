@@ -28,7 +28,7 @@ export default function TaskDetailPage() {
 
   useEffect(() => {
     fetchTask(id).then((task) => {
-      if (task) reset({ title: task.title, description: task.description, priority: task.priority, due_date: task.due_date });
+      if (task) reset({ title: task.title, description: task.description || '', priority: task.priority, due_date: task.due_date || '' });
     });
   }, [id]);
 
@@ -112,7 +112,7 @@ export default function TaskDetailPage() {
   return (
     <div className="max-w-4xl space-y-6">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-gray-500">
+      <div className="flex items-center gap-2 text-sm text-gray-500 flex-wrap">
         <Link to="/projects" className="hover:text-blue-600">Projects</Link>
         <span>/</span>
         <Link to={`/projects/${task.project_id}`} className="hover:text-blue-600">Project</Link>
@@ -126,8 +126,14 @@ export default function TaskDetailPage() {
           <div className="card">
             {editMode ? (
               <form onSubmit={handleSubmit(onSave)} className="space-y-4">
-                <input {...register('title')} className="input text-lg font-semibold" />
-                <textarea {...register('description')} className="input resize-none" rows={4} placeholder="Description..." />
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Title *</label>
+                  <input {...register('title')} className="input text-lg font-semibold" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Description</label>
+                  <textarea {...register('description')} className="input resize-none" rows={4} placeholder="Description..." />
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">Priority</label>
@@ -141,7 +147,7 @@ export default function TaskDetailPage() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <button type="submit" className="btn-primary text-sm" disabled={isSubmitting}>Save</button>
+                  <button type="submit" className="btn-primary text-sm" disabled={isSubmitting}>{isSubmitting ? 'Saving...' : 'Save'}</button>
                   <button type="button" onClick={() => setEditMode(false)} className="btn-secondary text-sm">Cancel</button>
                 </div>
               </form>
@@ -186,6 +192,10 @@ export default function TaskDetailPage() {
                 </button>
               </div>
             </form>
+
+            {task.comments?.length === 0 && (
+              <p className="text-sm text-gray-400 text-center py-4">No comments yet. Start the conversation!</p>
+            )}
 
             <div className="space-y-4">
               {task.comments?.map((comment) => (

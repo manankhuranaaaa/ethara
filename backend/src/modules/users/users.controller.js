@@ -23,4 +23,9 @@ const deactivateUser = asyncHandler(async (req, res) => {
   return sendSuccess(res, null, 'User deactivated successfully');
 });
 
-module.exports = { listUsers, getUserById, updateUserRole, deactivateUser };
+const searchUsers = asyncHandler(async (req, res) => {
+  const users = await usersService.searchByEmail(req.query.email);
+  return sendSuccess(res, users);
+});
+
+module.exports = { listUsers, getUserById, updateUserRole, deactivateUser, searchUsers };

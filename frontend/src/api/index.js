@@ -12,6 +12,7 @@ export const authApi = {
 // Users
 export const usersApi = {
   list: (params) => api.get('/users', { params }),
+  search: (email) => api.get('/users/search', { params: { email } }),
   getById: (id) => api.get(`/users/${id}`),
   updateRole: (id, role) => api.patch(`/users/${id}/role`, { role }),
   deactivate: (id) => api.delete(`/users/${id}`),
@@ -38,6 +39,7 @@ export const tasksApi = {
   delete: (id) => api.delete(`/tasks/${id}`),
   updateStatus: (id, status) => api.patch(`/tasks/${id}/status`, { status }),
   assign: (id, assignee_id) => api.patch(`/tasks/${id}/assign`, { assignee_id }),
+  getActivity: (id) => api.get(`/tasks/${id}/activity`),
 };
 
 // Comments

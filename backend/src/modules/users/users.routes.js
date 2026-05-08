@@ -6,6 +6,9 @@ const validate = require('../../middleware/validate');
 
 const router = express.Router();
 
+// Search by email — available to all authenticated users for member lookup
+router.get('/search', authenticate, usersController.searchUsers);
+
 router.use(authenticate, authorize('admin'));
 
 router.get('/', usersController.listUsers);
